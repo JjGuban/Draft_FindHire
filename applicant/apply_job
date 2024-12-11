@@ -1,0 +1,110 @@
+<?php
+session_start();
+require '../core/dbConfig.php';
+
+if ($_SESSION['role'] !== 'Applicant') {
+    header("Location: ../dashboard.php");
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+// Fetch available job posts
+$stmt = $pdo->query("SELECT * FROM job_posts ORDER BY created_at DESC");
+$jobPosts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindHire - Available Jobs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        nav {
+            background-color: #343a40;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .job {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .job h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        .job p {
+            margin: 5px 0;
+        }
+        .job button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .job button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div>
+            <strong>FindHire</strong>
+        </div>
+        <div>
+            <a href="../dashboard.php">Dashboard</a>
+            <a href="upload_resume.php">Upload Resume</a>
+            <a href="../core/handleForms.php?logout=1">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Available Job Posts</h2>
+        <?php if (count($jobPosts) > 0): ?>
+            <?php foreach ($jobPosts as $job): ?>
+                <div class="job">
+                    <h3><?= htmlspecialchars($job['title']) ?></h3>
+                    <p><?= htmlspecialchars($job['description']) ?></p>
+                    <form action="upload_resume.php" method="POST">
+                        <input type="hidden" name="job_id" value="<?= $job['id'] ?>">
+                        <button type="submit">Apply for this Job</button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>No job posts available at the moment.</p>
+        <?php endif; ?>
+    </div>
+</body>
+</html>
